@@ -12,11 +12,13 @@ ClinicalGuard is a 5-step LangGraph pipeline that goes beyond simple code extrac
 
 ## How It Works
 
-1. **Parse Note** — AI reads the raw discharge summary and extracts every medical concept: diagnoses, symptoms, procedures, medications mentioned, each with a confidence level and the exact quote from the note that supports it.
-2. **Match ICD Codes** — Extracted concepts are matched against a 2,390-code ICD-9 dictionary, returning the best-fit code for each diagnosis with a confidence score and reasoning for why that code was selected.
-3. **Lab Validation** — Each predicted code is cross-referenced against the patient's actual lab results. Does the glucose level support a diabetes diagnosis? Does the creatinine support renal disease? Specific lab values, normal ranges, and clinical interpretation are shown inline.
-4. **Prescription Validation** — Each predicted code is cross-referenced against the patient's medication records. Is the patient on antidiabetics for their diabetes code? Are antihypertensives prescribed for hypertension? Missing expected medications are flagged.
-5. **Final Report** — All evidence is consolidated into a color-coded validation report: ✅ Confirmed (labs and prescriptions support the code), 🟡 Needs Review (low confidence or insufficient evidence), 🔴 Inconsistency Flagged (clinical evidence contradicts the assigned code).
+The pipeline has five steps. Each one is a separate node in a LangGraph graph, so you can inspect what happened at every stage.
+
+1. **Parse Note** — I feed the raw discharge summary into Claude and ask it to pull out every medical concept it can find. Diagnoses, symptoms, procedures, meds mentioned — each one comes back with a confidence level and the exact quote from the note.
+2. **Match ICD Codes** — Those extracted concepts get matched against a 2,390-code ICD-9 dictionary. For each diagnosis the system returns the best-fit code, a confidence score, and a short explanation of why it picked that code.
+3. **Lab Validation** — This is where it gets interesting. Each predicted code gets cross-referenced against the patient's actual lab results. Coded for diabetes? Let me check the glucose. Coded for renal disease? What does the creatinine say? The actual values and normal ranges are shown inline.
+4. **Prescription Validation** — Same idea but for meds. If you're coded for diabetes, are you on metformin or insulin? If you're coded for hypertension, where are the antihypertensives? Missing expected medications get flagged.
+5. **Final Report** — Everything rolls up into a validation report. Each code gets one of three labels: Confirmed (evidence supports it), Needs Review (not enough data or low confidence), or Inconsistency Flagged (the clinical evidence actually contradicts the code).
 
 ## Demo Cases
 
@@ -51,4 +53,4 @@ streamlit run app.py
 
 ---
 
-Built solo by **Sathian S.** for the UofT Healthcare AI Hackathon 2026 (BRAVE Career).
+Built by Sathian Srikrishnan for the UofT Healthcare AI Hackathon 2026 (BRAVE Career).
