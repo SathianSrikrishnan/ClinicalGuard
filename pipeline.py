@@ -19,11 +19,28 @@ load_dotenv()
 
 # ---------------------------------------------------------------------------
 # Data loaders (cached at module level)
+# Local CSV fallback → Hugging Face raw URLs for cloud
 # ---------------------------------------------------------------------------
 DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
+HF_BASE = "https://huggingface.co/datasets/bavehackathon/2026-healthcare-ai/resolve/main/"
+
+DATA_FILES = [
+    "clinical_cases.csv",
+    "diagnoses_subset.csv",
+    "diagnosis_dictionary.csv",
+    "labs_subset.csv",
+    "lab_dictionary.csv",
+    "prescriptions_subset.csv",
+]
 
 def _load_csv(name: str) -> pd.DataFrame:
-    return pd.read_csv(os.path.join(DATA_DIR, name))
+    local_path = os.path.join(DATA_DIR, name)
+    if os.path.exists(local_path):
+        return pd.read_csv(local_path)
+    # Fall back to Hugging Face (cloud deployment)
+    gz_name = name + ".gz"
+    url = HF_BASE + gz_name
+    return pd.read_csv(url, compression="gzip")
 
 _cases = None
 _diag = None
