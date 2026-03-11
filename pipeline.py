@@ -58,15 +58,13 @@ def get_data():
         _labs = _load_csv("labs_subset.csv")
         _lab_dict = _load_csv("lab_dictionary.csv")
         _rx = _load_csv("prescriptions_subset.csv")
-        # Coerce join keys to string — Hugging Face may load different dtypes than local CSV
-        _cases["hadm_id"] = _cases["hadm_id"].astype(str)
-        _diag["hadm_id"] = _diag["hadm_id"].astype(str)
-        _diag["icd9_code"] = _diag["icd9_code"].astype(str)
-        _diag_dict["icd9_code"] = _diag_dict["icd9_code"].astype(str)
-        _labs["hadm_id"] = _labs["hadm_id"].astype(str)
-        _labs["itemid"] = _labs["itemid"].astype(str)
-        _lab_dict["itemid"] = _lab_dict["itemid"].astype(str)
-        _rx["hadm_id"] = _rx["hadm_id"].astype(str)
+        # Coerce join keys to int-then-string — Hugging Face loads floats, local loads ints
+        for df in [_cases, _diag, _labs, _rx]:
+            df["hadm_id"] = pd.to_numeric(df["hadm_id"], errors="coerce").astype("Int64").astype(str)
+        _diag["icd9_code"] = _diag["icd9_code"].astype(str).str.strip()
+        _diag_dict["icd9_code"] = _diag_dict["icd9_code"].astype(str).str.strip()
+        for df in [_labs, _lab_dict]:
+            df["itemid"] = pd.to_numeric(df["itemid"], errors="coerce").astype("Int64").astype(str)
     return _cases, _diag, _diag_dict, _labs, _lab_dict, _rx
 
 
