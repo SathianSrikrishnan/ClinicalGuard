@@ -58,16 +58,26 @@ def get_data():
         _labs = _load_csv("labs_subset.csv")
         _lab_dict = _load_csv("lab_dictionary.csv")
         _rx = _load_csv("prescriptions_subset.csv")
+        # Coerce join keys to string — Hugging Face may load different dtypes than local CSV
+        _cases["hadm_id"] = _cases["hadm_id"].astype(str)
+        _diag["hadm_id"] = _diag["hadm_id"].astype(str)
+        _diag["icd9_code"] = _diag["icd9_code"].astype(str)
+        _diag_dict["icd9_code"] = _diag_dict["icd9_code"].astype(str)
+        _labs["hadm_id"] = _labs["hadm_id"].astype(str)
+        _labs["itemid"] = _labs["itemid"].astype(str)
+        _lab_dict["itemid"] = _lab_dict["itemid"].astype(str)
+        _rx["hadm_id"] = _rx["hadm_id"].astype(str)
     return _cases, _diag, _diag_dict, _labs, _lab_dict, _rx
 
 
 def get_patient_case(hadm_id: float) -> dict:
     """Load all data for a single patient admission."""
     cases, diag, diag_dict, labs, lab_dict, rx = get_data()
-    case = cases[cases["hadm_id"] == hadm_id].iloc[0]
-    patient_diag = diag[diag["hadm_id"] == hadm_id].merge(diag_dict, on="icd9_code", how="left")
-    patient_labs = labs[labs["hadm_id"] == hadm_id].merge(lab_dict, on="itemid", how="left")
-    patient_rx = rx[rx["hadm_id"] == hadm_id]
+    hadm_str = str(int(hadm_id)) if hadm_id == int(hadm_id) else str(hadm_id)
+    case = cases[cases["hadm_id"] == hadm_str].iloc[0]
+    patient_diag = diag[diag["hadm_id"] == hadm_str].merge(diag_dict, on="icd9_code", how="left")
+    patient_labs = labs[labs["hadm_id"] == hadm_str].merge(lab_dict, on="itemid", how="left")
+    patient_rx = rx[rx["hadm_id"] == hadm_str]
     return {
         "case_id": case["case_id"],
         "hadm_id": hadm_id,
